@@ -32,10 +32,11 @@ def test_db_conn():
         cursor = conn.cursor()
         cursor.execute('SELECT COUNT(*) FROM tdb.branch;')
         count = cursor.fetchone()[0]
+        print("count: ", count)
         cursor.close()
         conn.close()
 
-        return jsonify({"Count": count})
+        return jsonify({"DB Connection: ": "Success"})
     except Exception as e:
         return jsonify({"Error connecting to Redshift": e})
 
