@@ -8,9 +8,7 @@ CORS(app)
 
 @app.route("/test-app", methods=["GET"])
 def test_app():
-    return jsonify({"message": "Hello, world!"})
+    return jsonify({"message": "Testing App!"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
-# testing comment
