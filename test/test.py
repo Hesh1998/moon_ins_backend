@@ -38,7 +38,8 @@ def test_db_conn():
 
         return jsonify({"DB Connection: ": "Success"})
     except Exception as e:
-        return jsonify({"Error connecting to Redshift": e})
+        print({"Error connecting to Redshift": e})
+        return jsonify({"DB Connection: ": "Failed"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
