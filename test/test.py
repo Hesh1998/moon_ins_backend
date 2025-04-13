@@ -10,8 +10,7 @@ app = Flask(__name__)
 CORS(app)
 
 # DB connection configuration
-session = boto3.session.Session()
-client = session.client(service_name='secretsmanager', region_name='ap-southeast-1')
+client = boto3.client('secretsmanager')
 secret = client.get_secret_value(SecretId='rs/admin/credentials')
 creds = json.loads(secret['SecretString'])
 
