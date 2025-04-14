@@ -27,26 +27,42 @@ def insert_or_update_agent():
         )
         cursor = conn.cursor()
 
-        # Insert or update agent
+        # Update the existing agent
         cursor.execute("""
-            INSERT INTO tdb.agent (agent_id, agent_code, first_name, last_name, email, phone, team_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (agent_id) DO UPDATE SET
-                agent_code = EXCLUDED.agent_code,
-                first_name = EXCLUDED.first_name,
-                last_name = EXCLUDED.last_name,
-                email = EXCLUDED.email,
-                phone = EXCLUDED.phone,
-                team_id = EXCLUDED.team_id
-        """, (
-            agent_info['agent_id'],
+            UPDATE tdb.agent
+            SET agent_code = %s,
+                first_name = %s,
+                last_name = %s,
+                email = %s,
+                phone = %s,
+                team_id = %s
+            WHERE agent_id = %s
+            """, (
             agent_info['agent_code'],
             agent_info['first_name'],
             agent_info['last_name'],
             agent_info['email'],
             agent_info['phone'],
-            agent_info['team_id']
-        ))
+            agent_info['team_id'],
+            agent_info['agent_id']
+            )
+        )
+
+        # If no agent rows were updated, insert a new one
+        if cursor.rowcount == 0:
+            cursor.execute("""
+                INSERT INTO tdb.agent (agent_id, agent_code, first_name, last_name, email, phone, team_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    agent_info['agent_id'],
+                    agent_info['agent_code'],
+                    agent_info['first_name'],
+                    agent_info['last_name'],
+                    agent_info['email'],
+                    agent_info['phone'],
+                    agent_info['team_id']
+                )
+            )
 
         # Insert agent-product mappings only if not already present
         for product_id in products:
