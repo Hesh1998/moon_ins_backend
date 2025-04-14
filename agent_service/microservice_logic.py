@@ -1,0 +1,70 @@
+from flask import Blueprint, request, jsonify
+import psycopg2
+import json
+import boto3
+
+agent_bp = Blueprint('agent_bp', __name__)
+
+# Load DB credentials from Secrets Manager
+client = boto3.client('secretsmanager', region_name='ap-southeast-1')
+secret = client.get_secret_value(SecretId='rs/admin/credentials')
+creds = json.loads(secret['SecretString'])
+
+# Endpoint to insert/update agent and permitted products
+@agent_bp.route('/agent/insert_update', methods=['POST'])
+def insert_or_update_agent():
+    try:
+        data = request.get_json()
+        agent_info = data['agent_information']
+        products = data['products']
+
+        conn = psycopg2.connect(
+            host=creds['host'],
+            port=creds['port'],
+            user=creds['username'],
+            password=creds['password'],
+            dbname='mat-tdb'
+        )
+        cursor = conn.cursor()
+
+        # Insert or update agent
+        cursor.execute("""
+            INSERT INTO tdb.agent (agent_id, agent_code, first_name, last_name, email, phone, team_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (agent_id) DO UPDATE SET
+                agent_code = EXCLUDED.agent_code,
+                first_name = EXCLUDED.first_name,
+                last_name = EXCLUDED.last_name,
+                email = EXCLUDED.email,
+                phone = EXCLUDED.phone,
+                team_id = EXCLUDED.team_id
+        """, (
+            agent_info['agent_id'],
+            agent_info['agent_code'],
+            agent_info['first_name'],
+            agent_info['last_name'],
+            agent_info['email'],
+            agent_info['phone'],
+            agent_info['team_id']
+        ))
+
+        # Insert agent-product mappings only if not already present
+        for product_id in products:
+            cursor.execute("""
+                SELECT 1 FROM tdb.agent_product WHERE agent_id = %s AND product_id = %s
+            """, (agent_info['agent_id'], product_id))
+            exists = cursor.fetchone()
+            if not exists:
+                cursor.execute("""
+                    INSERT INTO tdb.agent_product (agent_id, product_id)
+                    VALUES (%s, %s)
+                """, (agent_info['agent_id'], product_id))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({"message": "Agent data inserted/updated successfully."}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
