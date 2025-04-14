@@ -1,4 +1,3 @@
-# Import dependencies
 from flask import Flask
 from flask_cors import CORS
 from agent_service.microservice_logic import agent_bp
@@ -7,6 +6,7 @@ from agent_service.microservice_logic import agent_bp
 app = Flask(__name__)
 CORS(app)
 
+# Route/Endpoint blueprints
 app.register_blueprint(agent_bp)
 
 if __name__ == '__main__':

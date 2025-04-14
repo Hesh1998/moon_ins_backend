@@ -3,6 +3,7 @@ import psycopg2
 import json
 import boto3
 
+# Route blueprint definition
 agent_bp = Blueprint('agent_bp', __name__)
 
 # Load DB credentials from Secrets Manager
@@ -10,7 +11,7 @@ client = boto3.client('secretsmanager', region_name='ap-southeast-1')
 secret = client.get_secret_value(SecretId='rs/admin/credentials')
 creds = json.loads(secret['SecretString'])
 
-# Endpoint to insert/update agent and permitted products
+# Endpoint to insert/update agent data and permitted products
 @agent_bp.route('/agent/insert_update', methods=['POST'])
 def insert_or_update_agent():
     try:
