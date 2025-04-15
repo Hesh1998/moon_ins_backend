@@ -18,7 +18,7 @@ app.register_blueprint(notification_bp)
 
 # Schedule the aggregator_service job daily at 7 AM
 scheduler = BackgroundScheduler()
-scheduler.add_job(run_aggregator_service, 'cron', hour=11, minute=45, timezone=timezone('Asia/Colombo'))
+scheduler.add_job(run_aggregator_service, 'cron', hour=12, minute=3, timezone=timezone('Asia/Colombo'), max_instances=1, id='daily_aggregation_job')
 scheduler.start()
 
 if __name__ == '__main__':
