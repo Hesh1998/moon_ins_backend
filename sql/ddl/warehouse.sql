@@ -26,3 +26,20 @@ CREATE TABLE dwh.fact_sales (
     agent_sk INTEGER,
     amount INTEGER
 );
+
+CREATE TABLE dwh.sales_team_aggr (
+    team_name VARCHAR(100),
+    total_sale_amount INTEGER
+);
+
+CREATE TABLE dwh.sales_branch_aggr (
+    branch_name VARCHAR(100),
+    total_sale_amount INTEGER
+);
+
+CREATE TABLE dwh.sales_product_aggr (
+    product_name VARCHAR(100),
+    total_sale_amount INTEGER,
+    target INTEGER,
+    sales_target_achieved VARCHAR(3)
+);
