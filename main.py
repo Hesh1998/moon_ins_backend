@@ -16,10 +16,11 @@ app.register_blueprint(agent_bp)
 app.register_blueprint(integration_bp)
 app.register_blueprint(notification_bp)
 
-# Schedule the aggregator_service job daily at 7 AM
-scheduler = BackgroundScheduler()
-scheduler.add_job(run_aggregator_service, 'cron', hour=12, minute=3, timezone=timezone('Asia/Colombo'), max_instances=1, id='daily_aggregation_job')
-scheduler.start()
-
 if __name__ == '__main__':
+    # Schedule the aggregator_service job daily at 7 AM
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(run_aggregator_service, 'cron', hour=12, minute=10, timezone=timezone('Asia/Colombo'), max_instances=1, id='daily_aggregation_job')
+    scheduler.start()
+
+    # Start Flask web server
     app.run(host='0.0.0.0', port=5000, debug=True)
