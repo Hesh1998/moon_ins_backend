@@ -33,7 +33,6 @@ def load_dim_product():
 
         # Truncate dimension table
         cursor_dwh.execute("TRUNCATE TABLE dwh.dim_product")
-        conn_dwh.commit()
 
         # Fetch product data from transactional table
         cursor_trx.execute("""
@@ -43,13 +42,13 @@ def load_dim_product():
         rows = cursor_trx.fetchall()
         
         # Insert into dwh.dim_product with auto-incrementing product_sk
-        # for sk, row in enumerate(rows, start=1):
-            # cursor_dwh.execute("""
-            #     INSERT INTO dwh.dim_product (product_sk, product_id, product_name, product_type, target)
-            #     VALUES (%s, %s, %s, %s, %s)
-            # """, (sk, row[0], row[1], row[2], row[3]))
+        for sk, row in enumerate(rows, start=1):
+            cursor_dwh.execute("""
+                INSERT INTO dwh.dim_product (product_sk, product_id, product_name, product_type, target)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (sk, row[0], row[1], row[2], row[3]))
 
-        # conn_dwh.commit()
+        conn_dwh.commit()
         conn_trx.close()
         conn_dwh.close()
 
