@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime, timedelta
 from pytz import timezone
 from agent_service.microservice_logic import agent_bp
 from integration_service.microservice_logic import integration_bp
@@ -18,9 +19,13 @@ app.register_blueprint(notification_bp)
 
 if __name__ == '__main__':
     # Schedule the aggregator_service job daily at 7 AM
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(run_aggregator_service, 'cron', hour=12, minute=10, timezone=timezone('Asia/Colombo'), max_instances=1, id='daily_aggregation_job')
-    scheduler.start()
+    run_date = datetime.now(timezone('Asia/Colombo')).date()
+    today = datetime.now(timezone('Asia/Colombo')).date()
+    if run_date == today:
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(run_aggregator_service, 'cron', hour=12, minute=22, timezone=timezone('Asia/Colombo'), max_instances=1, id='daily_aggregation_job')
+        scheduler.start()
+        run_date += timedelta(days=1)
 
     # Start Flask web server
     app.run(host='0.0.0.0', port=5000, debug=True)
