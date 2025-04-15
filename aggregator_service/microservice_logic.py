@@ -87,7 +87,7 @@ def load_dim_agent():
         cursor_trx.execute("""
             SELECT 
                 a.agent_id,
-                CONCAT(a.first_name, ' ', a.last_name) AS agent_name,
+                a.first_name || ' ' || a.last_name AS agent_name,
                 t.team_name,
                 b.branch_name
             FROM tdb.agent a
