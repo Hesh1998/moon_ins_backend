@@ -33,6 +33,7 @@ def load_dim_product():
 
         # Truncate dimension table
         cursor_dwh.execute("TRUNCATE TABLE dwh.dim_product")
+        conn_dwh.commit()
 
         # Fetch product data from transactional table
         cursor_trx.execute("""
@@ -43,19 +44,10 @@ def load_dim_product():
 
         # Insert into dwh.dim_product with auto-incrementing product_sk
         for sk, row in enumerate(rows, start=1):
-            product_id = row[0]
-
-            # Check if product_id already exists in dwh.dim_product
             cursor_dwh.execute("""
-                SELECT 1 FROM dwh.dim_product WHERE product_id = %s
-            """, (product_id,))
-            exists = cursor_dwh.fetchone()
-
-            if not exists:
-                cursor_dwh.execute("""
-                    INSERT INTO dwh.dim_product (product_sk, product_id, product_name, product_type, target)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (sk, row[0], row[1], row[2], row[3]))
+                INSERT INTO dwh.dim_product (product_sk, product_id, product_name, product_type, target)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (sk, row[0], row[1], row[2], row[3]))
 
         conn_dwh.commit()
         conn_trx.close()
