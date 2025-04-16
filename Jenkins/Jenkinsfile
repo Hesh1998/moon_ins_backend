@@ -1,0 +1,61 @@
+pipeline {
+    agent any
+
+    environment {
+        NAMESPACE = "dev"
+        POD_NAME = "prod1-pod"
+        GIT_REPO = "https://github.com/Hesh1998/moon_ins_backend.git"
+        GIT_BRANCH = "prod1"
+        TARGET_DIR = "/moon_ins/scripts/moon_ins_backend"
+        BASE_DIR = "/moon_ins/scripts"
+    }
+
+    stages {
+        stage('Install Python Packages If Missing') {
+            steps {
+                script {
+                    def packages = [
+                        "python3-flask",
+                        "python3-flask-cors",
+                        "python3-boto3",
+                        "python3-psycopg2",
+                        "python3-apscheduler"
+                    ]
+
+                    for (pkg in packages) {
+                        sh """
+                        kubectl exec -n ${NAMESPACE} ${POD_NAME} -- bash -c '
+                            dpkg -s ${pkg} >/dev/null 2>&1 || apt install -y ${pkg}
+                        '
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Check & Setup Project Folder') {
+            steps {
+                script {
+                    def folderExists = sh (
+                        returnStatus: true,
+                        script: "kubectl exec -n ${NAMESPACE} ${POD_NAME} -- test -d ${TARGET_DIR}"
+                    ) == 0
+
+                    if (folderExists) {
+                        echo "Project folder exists. Pulling latest changes..."
+                        sh "kubectl exec -n ${NAMESPACE} ${POD_NAME} -- bash -c 'cd ${TARGET_DIR} && git pull origin ${GIT_BRANCH}'"
+                    } else {
+                        echo "Project folder does not exist. Creating and cloning repository..."
+                        sh """
+                        kubectl exec -n ${NAMESPACE} ${POD_NAME} -- bash -c '
+                            mkdir -p ${BASE_DIR} && \
+                            cd ${BASE_DIR} && \
+                            git clone -b ${GIT_BRANCH} ${GIT_REPO}
+                        '
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
